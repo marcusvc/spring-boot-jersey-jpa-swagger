@@ -1,5 +1,9 @@
 package edu.marcus.business.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.springframework.stereotype.Component;
 
 import edu.marcus.business.domain.BookBusiness;
@@ -17,25 +21,27 @@ public class BookController {
 		this.bookFactory = bookFactory;
 	}
 
-	public Iterable<BookBusiness> getAll() {
-		return bookFactory.transformEntity(bookRepository.findAll());
+	public List<BookBusiness> getAll() {
+		return StreamSupport.stream(bookRepository.findAll().spliterator(), false)
+				.map(bookFactory::transformToBusiness)
+				.collect(Collectors.toList());
 	}
 
 	public BookBusiness get(Long oid) {
 		return bookRepository.findById(oid)
-				.map(bookFactory::transformEntity)
+				.map(bookFactory::transformToBusiness)
 				.orElse(null);
 	}
 
 	public BookBusiness add(BookBusiness book) {
-		return bookFactory.transformEntity(
+		return bookFactory.transformToBusiness(
 				bookRepository.save(
-						bookFactory.transformBusinessToEntity(book)));
+						bookFactory.transformToEntity(book)));
 	}
 
 	public void update(Long oid, BookBusiness book) {
 		book.setOid(oid);
-		bookRepository.save(bookFactory.transformBusinessToEntity(book));
+		bookRepository.save(bookFactory.transformToEntity(book));
 	}
 
 	public void delete(Long oid) {
